@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using DotNetGram.DAL;
 using DotNetGram.Models;
+using System.IO;
 
 namespace DotNetGram.Controllers
 {
@@ -28,7 +29,7 @@ namespace DotNetGram.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Post post = db.Posts.Find(id);
+            Post post = db.Posts.Include(i => i.FilePath).SingleOrDefault(i => i.ID == id);
             if (post == null)
             {
                 return HttpNotFound();
@@ -47,10 +48,25 @@ namespace DotNetGram.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "ID,Caption")] Post post)
+        public ActionResult Create([Bind(Include = "ID, Caption")] Post post, HttpPostedFileBase upload)
         {
             if (ModelState.IsValid)
             {
+                if (upload != null && upload.ContentLength > 0)
+                {
+                    var image = new FilePath
+                    {
+                        FileName = System.IO.Path.GetFileName(upload.FileName),
+                        FileType = FileType.Image
+                    };
+                    post.FilePath = image;
+
+                    string targetFolder = Server.MapPath("~/images");
+                    string targetPath = Path.Combine(targetFolder, image.FileName);
+                    upload.SaveAs(targetPath);
+
+                }
+
                 db.Posts.Add(post);
                 db.SaveChanges();
                 return RedirectToAction("Index");
