@@ -5,11 +5,9 @@ namespace DotNetGram.Models
 {
     public class FilePath
     {
-        public int ID { get; set; }
-
         [Key]
         [ForeignKey("Post")]
-        public int PostID { get; set; }
+        public int? PostID { get; set; }
 
         [StringLength(255)]
         public string FileName { get; set; }

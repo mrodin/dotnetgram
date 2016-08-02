@@ -64,7 +64,6 @@ namespace DotNetGram.Controllers
                     string targetFolder = Server.MapPath("~/images");
                     string targetPath = Path.Combine(targetFolder, image.FileName);
                     upload.SaveAs(targetPath);
-
                 }
 
                 db.Posts.Add(post);
@@ -128,6 +127,15 @@ namespace DotNetGram.Controllers
         {
             Post post = db.Posts.Find(id);
             db.Posts.Remove(post);
+
+            var filePath = db.FilePaths
+                .Where(f => f.PostID == id)
+                .SingleOrDefault();
+            if(filePath != null)
+            {
+                db.FilePaths.Remove(filePath);
+            }
+
             db.SaveChanges();
             return RedirectToAction("Index");
         }
